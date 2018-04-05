@@ -1,22 +1,42 @@
 import * as React from 'react';
+import { AppProps, AppState, Cake } from './AppProps';
+import CakesList from './components/CakesList';
 import './App.css';
 
-const logo = require('./logo.svg');
+export default class App extends React.Component<AppProps, AppState> {
+  // variables
+  private getUrl: string = 'http://ec2-52-209-201-89.eu-west-1.compute.amazonaws.com:5000/api/cakes';
 
-class App extends React.Component {
-  render() {
-    return (
-      <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <h1 className="App-title">Welcome to React</h1>
-        </header>
-        <p className="App-intro">
-          To get started, edit <code>src/App.tsx</code> and save to reload.
-        </p>
-      </div>
+  constructor(props: AppProps) {
+    super(props);
+
+    this.state = {
+      cakes: []
+    };
+  }
+
+  public componentDidMount(): void {
+    this.getCakes();
+  }
+
+  render(): React.ReactElement<AppProps> {
+    return (      
+      this.state && this.state.cakes && (
+        <CakesList
+          cakes={this.state.cakes}
+        />
+      )
     );
   }
-}
 
-export default App;
+  private getCakes(): void {
+    fetch(this.getUrl).then(response => {
+      return response.json();      
+    }).then(responseJson => {
+      const cakesResult: Cake[] = responseJson;
+      this.setState({ cakes: cakesResult });
+    }).catch(error => {
+      // console.log("Error with getCakes:", error.message);
+    });
+  }
+}
